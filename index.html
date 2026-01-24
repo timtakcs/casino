@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poker Totals</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "chart.js": "./node_modules/chart.js/dist/chart.js",
+        "@kurkle/color": "./node_modules/@kurkle/color/dist/color.esm.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="chart-section">
+      <canvas id="pokerChart"></canvas>
+    </div>
+    <div class="table-section">
+      <h2>Current Totals</h2>
+      <table id="totalsTable">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <script type="module" src="dist/main.js"></script>
+</body>
+</html>

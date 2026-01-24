@@ -1,0 +1,27 @@
+{
+  "name": "poker-totals",
+  "version": "1.0.0",
+  "description": "visualizer for house poker games",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^5.7.3"
+  },
+  "keywords": [
+    "poker",
+    "viz",
+    "visualizer",
+    "totals"
+  ],
+  "author": "timur",
+  "license": "ISC",
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "vite": "^7.3.1"
+  }
+}

@@ -22,6 +22,10 @@ export const gamesData: GameData[] = [
   {
     date: "2026-01-21",
     differences: { "timur": 4.20, "omar": -10, "carson": -0.55, "arv": 6.05, "vin": 0.30 }
+  },
+  {
+    date: "2026-01-24",
+    differences: { "timur": -6.35, "omar": -5, "carson": +4.90, "arv": 6.05, "vin": 2.60, "connor": 4.76, "jesus": 3.35 }
   }
 ];
 
@@ -87,7 +91,7 @@ export function processGameData(games: GameData[]): ProcessedData {
   });
 
   console.log(runningTotals)
-  // console.log("will this relfect")
+  console.log("will this relfect")
 
   // Calculate min and max values across all data points
   let minValue = Infinity;
@@ -109,10 +113,7 @@ export function processGameData(games: GameData[]): ProcessedData {
       data: runningTotals.get(player)!,
       borderColor: playerColors[player],
       backgroundColor: playerColors[player],
-      fill: false,
-      cubicInterpolationMode: 'monotone',
-      tension: 0.4,
-      spanGaps: true,
+      tension: 0,
       pointRadius: 0,
       pointHoverRadius: 6,
       borderWidth: 2

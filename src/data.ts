@@ -29,7 +29,7 @@ export const gamesData: GameData[] = [
   },
   {
     date: "2026-01-26",
-    differences: { "timur": -0.4, "omar": 1.65, "carson": -5.0, "arv": 5.75, "vin": -1.90 }
+    differences: { "timur": -0.4, "omar": 1.65, "carson": -5.0, "arv": 5.75, "vin": -1.90, "connor": 0, "jesus": 0 }
   }
 ];
 
@@ -40,7 +40,7 @@ export const playerColors: Record<string, string> = {
   vin: '#6B5B8C',      // Slate purple
   carson: '#B87757',    // Burnt orange
   connor: '#B81157',
-  jesus: "#AA7757"
+  jesus: "#5555CC"
 };
 
 export function generateGameLabels(games: GameData[]): string[] {

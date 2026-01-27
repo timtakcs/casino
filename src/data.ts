@@ -38,7 +38,9 @@ export const playerColors: Record<string, string> = {
   timur: '#8B4A5F',    // Burgundy
   omar: '#4A7C59',     // Forest green
   vin: '#6B5B8C',      // Slate purple
-  carson: '#B87757'    // Burnt orange
+  carson: '#B87757',    // Burnt orange
+  connor: '#B81157',
+  jesus: "#AA7757"
 };
 
 export function generateGameLabels(games: GameData[]): string[] {

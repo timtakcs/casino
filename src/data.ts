@@ -32,8 +32,16 @@ export const gamesData: GameData[] = [
     differences: { "timur": -0.4, "omar": 1.65, "carson": -5.0, "arv": 5.75, "vin": -1.90, "connor": 0, "jesus": 0 }
   },
   {
-    date: "2026-01-29",
+    date: "2026-01-28",
     differences: { "timur": 0, "omar": -5, "carson": 13.45, "arv": -8.45, "vin": 0, "connor": 0, "jesus": 0 }
+  },
+  {
+    date: "2026-01-31",
+    differences: { "timur": 0, "omar": 13.1, "carson": 11.9, "arv": -15, "vin": 0, "connor": -10, "jesus": 0 }
+  },
+  {
+    date: "2026-02-2",
+    differences: { "timur": 0.4, "omar": -6.25, "carson": -0.85, "arv": 6.70, "vin": 0, "connor": 0, "jesus": 0 }
   }
 ];
 
@@ -43,8 +51,8 @@ export const playerColors: Record<string, string> = {
   omar: '#4A7C59',     // Forest green
   vin: '#6B5B8C',      // Slate purple
   carson: '#B87757',    // Burnt orange
-  connor: '#B81157',
-  jesus: "#5555CC"
+  connor: '#6B9A8E',   // Dusty teal
+  jesus: '#A8956A'     // Dusty gold
 };
 
 export function generateGameLabels(games: GameData[]): string[] {
@@ -123,7 +131,8 @@ export function processGameData(games: GameData[]): ProcessedData {
       data: runningTotals.get(player)!,
       borderColor: playerColors[player],
       backgroundColor: playerColors[player],
-      tension: 0,
+      tension: 0.4,
+      cubicInterpolationMode: 'monotone',
       pointRadius: 0,
       pointHoverRadius: 6,
       borderWidth: 2

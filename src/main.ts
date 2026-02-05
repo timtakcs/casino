@@ -159,18 +159,81 @@ const tbody = document.querySelector('#totalsTable tbody') as HTMLTableSectionEl
 const sortedPlayers = Array.from(processedData.currentTotals.entries())
   .sort((a, b) => b[1] - a[1]);
 
+function togglePlayerDetails(player: string): void {
+  const detailsRow = document.querySelector(`.player-details[data-player="${player}"]`) as HTMLElement;
+  const mainRow = document.querySelector(`.player-row[data-player="${player}"]`) as HTMLElement;
+
+  const isExpanded = detailsRow.classList.contains('expanded');
+
+  // Close any other expanded rows first
+  document.querySelectorAll('.player-details.expanded').forEach(row => {
+    row.classList.remove('expanded');
+  });
+  document.querySelectorAll('.player-row.active').forEach(row => {
+    row.classList.remove('active');
+  });
+
+  // Toggle this row
+  if (!isExpanded) {
+    detailsRow.classList.add('expanded');
+    mainRow.classList.add('active');
+  }
+}
+
 sortedPlayers.forEach(([player, total]) => {
-  const row = tbody.insertRow();
-  const playerCell = row.insertCell(0);
-  const totalCell = row.insertCell(1);
+  const stats = processedData.playerStats.get(player)!;
 
+  // Main row
+  const mainRow = document.createElement('tr');
+  mainRow.className = 'player-row';
+  mainRow.dataset.player = player;
+
+  const playerCell = document.createElement('td');
+  playerCell.className = 'player-name';
   playerCell.textContent = player;
-  totalCell.textContent = total.toFixed(2);
 
-  // Add CSS class for color coding
+  const totalCell = document.createElement('td');
+  totalCell.className = 'player-total';
+  totalCell.textContent = total.toFixed(2);
   if (total > 0) {
     totalCell.classList.add('positive');
   } else if (total < 0) {
     totalCell.classList.add('negative');
   }
+
+  mainRow.appendChild(playerCell);
+  mainRow.appendChild(totalCell);
+
+  // Details row
+  const detailsRow = document.createElement('tr');
+  detailsRow.className = 'player-details';
+  detailsRow.dataset.player = player;
+
+  const detailsCell = document.createElement('td');
+  detailsCell.colSpan = 2;
+  detailsCell.innerHTML = `
+    <div class="details-content">
+      <div class="stat-row">
+        <span class="stat-label">Mean:</span>
+        <span class="stat-value ${stats.mean > 0 ? 'positive' : stats.mean < 0 ? 'negative' : ''}">${stats.mean.toFixed(2)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Std Dev:</span>
+        <span class="stat-value">${stats.standardDeviation.toFixed(2)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Games:</span>
+        <span class="stat-value">${stats.sampleCount}</span>
+      </div>
+    </div>
+  `;
+  detailsRow.appendChild(detailsCell);
+
+  tbody.appendChild(mainRow);
+  tbody.appendChild(detailsRow);
+
+  // Click handler
+  mainRow.addEventListener('click', () => {
+    togglePlayerDetails(player);
+  });
 });

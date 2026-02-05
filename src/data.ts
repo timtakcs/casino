@@ -1,4 +1,4 @@
-import { GameData, ProcessedData } from './types.js';
+import { GameData, ProcessedData, PlayerStatistics } from './types.js';
 
 export const gamesData: GameData[] = [
   {
@@ -78,6 +78,42 @@ export function generateGameLabels(games: GameData[]): string[] {
   });
 }
 
+function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatistics> {
+  const playerDeltas = new Map<string, number[]>();
+
+  // Collect all non-zero deltas for each player
+  games.forEach(game => {
+    Object.entries(game.differences).forEach(([player, delta]) => {
+      if (delta !== 0) {
+        if (!playerDeltas.has(player)) {
+          playerDeltas.set(player, []);
+        }
+        playerDeltas.get(player)!.push(delta);
+      }
+    });
+  });
+
+  const stats = new Map<string, PlayerStatistics>();
+
+  playerDeltas.forEach((deltas, player) => {
+    const n = deltas.length;
+
+    if (n === 0) {
+      stats.set(player, { mean: 0, standardDeviation: 0, sampleCount: 0 });
+      return;
+    }
+
+    const mean = deltas.reduce((sum, d) => sum + d, 0) / n;
+    const squaredDiffs = deltas.map(d => Math.pow(d - mean, 2));
+    const variance = squaredDiffs.reduce((sum, sq) => sum + sq, 0) / n;
+    const standardDeviation = Math.sqrt(variance);
+
+    stats.set(player, { mean, standardDeviation, sampleCount: n });
+  });
+
+  return stats;
+}
+
 export function processGameData(games: GameData[]): ProcessedData {
   const gameLabels = generateGameLabels(games);
   const labels = ["", ...gameLabels];
@@ -154,10 +190,13 @@ export function processGameData(games: GameData[]): ProcessedData {
     };
   });
 
+  const playerStats = calculatePlayerStatistics(games);
+
   return {
     labels,
     datasets,
     currentTotals,
+    playerStats,
     minValue: minValue - 5,
     maxValue: maxValue + 5
   };

@@ -22,6 +22,44 @@ Chart.register(
   Tooltip
 );
 
+// Plugin to draw emojis at the end of each line
+const emojiPlugin = {
+  id: 'emojiLabels',
+  afterDatasetsDraw(chart: Chart) {
+    const ctx = chart.ctx;
+    const isMobile = window.innerWidth < 768;
+    const fontSize = isMobile ? 16 : 20;
+
+    chart.data.datasets.forEach((dataset: any, datasetIndex: number) => {
+      if (dataset.hidden || !dataset.emoji) return;
+
+      const meta = chart.getDatasetMeta(datasetIndex);
+      if (meta.hidden) return;
+
+      // Find the last non-null data point
+      let lastIndex = -1;
+      for (let i = dataset.data.length - 1; i >= 0; i--) {
+        if (dataset.data[i] !== null) {
+          lastIndex = i;
+          break;
+        }
+      }
+
+      if (lastIndex === -1) return;
+
+      const point = meta.data[lastIndex];
+      if (!point) return;
+
+      ctx.save();
+      ctx.font = `${fontSize}px sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(dataset.emoji, point.x + 8, point.y);
+      ctx.restore();
+    });
+  }
+};
+
 // Process the game data
 const processedData = processGameData(gamesData);
 
@@ -34,10 +72,16 @@ new Chart(ctx, {
     labels: processedData.labels,
     datasets: processedData.datasets
   },
+  plugins: [emojiPlugin],
   options: {
     responsive: true,
     maintainAspectRatio: false,
     backgroundColor: 'transparent',
+    layout: {
+      padding: {
+        right: 40
+      }
+    },
     plugins: {
       legend: {
         display: true,

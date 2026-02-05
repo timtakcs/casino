@@ -59,6 +59,14 @@ export const playerColors: Record<string, string> = {
   jesus: '#A8956A'     // Dusty gold
 };
 
+export const playerEmojis: Record<string, string> = {
+  arv: '🕺🏽',
+  timur: '🐗',
+  omar: '🦧',
+  carson: '🐈‍⬛',
+  connor: '🟦'
+};
+
 export function generateGameLabels(games: GameData[]): string[] {
   return games.map(game => {
     const date = new Date(game.date);
@@ -130,6 +138,7 @@ export function processGameData(games: GameData[]): ProcessedData {
   });
 
   const datasets = Array.from(allPlayers).map(player => {
+    const hasEmoji = player in playerEmojis;
     return {
       label: player,
       data: runningTotals.get(player)!,
@@ -139,7 +148,9 @@ export function processGameData(games: GameData[]): ProcessedData {
       cubicInterpolationMode: 'monotone',
       pointRadius: 0,
       pointHoverRadius: 6,
-      borderWidth: 2
+      borderWidth: 2,
+      hidden: !hasEmoji,
+      emoji: playerEmojis[player] || null
     };
   });
 

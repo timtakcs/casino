@@ -115,7 +115,7 @@ function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatist
     const n = deltas.length;
 
     if (n === 0) {
-      stats.set(player, { mean: 0, standardDeviation: 0, sampleCount: 0, bestDay: 0, worstDay: 0, streak: 0 });
+      stats.set(player, { mean: 0, standardDeviation: 0, sampleCount: 0, bestDay: 0, worstDay: 0, streak: 0, coefficientOfVariance: 0 });
       return;
     }
 
@@ -144,7 +144,9 @@ function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatist
       }
     }
 
-    stats.set(player, { mean, standardDeviation, sampleCount: n, bestDay, worstDay, streak });
+    const coefficientOfVariance = mean !== 0 ? standardDeviation / Math.abs(mean) : 0;
+
+    stats.set(player, { mean, standardDeviation, sampleCount: n, bestDay, worstDay, streak, coefficientOfVariance });
   });
 
   return stats;

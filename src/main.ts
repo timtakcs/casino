@@ -66,7 +66,19 @@ const processedData = processGameData(gamesData);
 // Create the chart
 const ctx = document.getElementById('pokerChart') as HTMLCanvasElement;
 
-new Chart(ctx, {
+const tooltipFilter = (tooltipItem: any) => {
+  const chart = tooltipItem.chart;
+  const meta = chart.getDatasetMeta(tooltipItem.datasetIndex);
+  const point = meta.data[tooltipItem.dataIndex];
+  if (!point) return false;
+  const evt = (chart as any)._lastEvent;
+  if (!evt) return false;
+  const dx = point.x - evt.x;
+  const dy = point.y - evt.y;
+  return Math.sqrt(dx * dx + dy * dy) < 40;
+};
+
+const pokerChart = new Chart(ctx, {
   type: 'line',
   data: {
     labels: processedData.labels,
@@ -119,17 +131,7 @@ new Chart(ctx, {
           size: 12,
           weight: 300
         },
-        filter: (tooltipItem: any) => {
-          const chart = tooltipItem.chart;
-          const meta = chart.getDatasetMeta(tooltipItem.datasetIndex);
-          const point = meta.data[tooltipItem.dataIndex];
-          if (!point) return false;
-          const evt = (chart as any)._lastEvent;
-          if (!evt) return false;
-          const dx = point.x - evt.x;
-          const dy = point.y - evt.y;
-          return Math.sqrt(dx * dx + dy * dy) < 40;
-        },
+        filter: tooltipFilter,
         callbacks: {
           title: (items: any[]) => {
             if (!items.length) return '';
@@ -224,6 +226,20 @@ function stdDevColor(stdDev: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+// Compute CoV range across all players for color interpolation
+const allCoVs = sortedPlayers.map(([p]) => processedData.playerStats.get(p)!.coefficientOfVariance);
+const minCoV = Math.min(...allCoVs);
+const maxCoV = Math.max(...allCoVs);
+
+function covColor(cov: number): string {
+  const t = maxCoV > minCoV ? (cov - minCoV) / (maxCoV - minCoV) : 0;
+  // Blue (#5A7A9B) to Orange (#B8864A)
+  const r = Math.round(90 + t * 94);
+  const g = Math.round(122 + t * 12);
+  const b = Math.round(155 - t * 81);
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 sortedPlayers.forEach(([player, total]) => {
   const stats = processedData.playerStats.get(player)!;
 
@@ -257,9 +273,12 @@ sortedPlayers.forEach(([player, total]) => {
   const streakColorClass = stats.streak > 0 ? 'positive' : stats.streak < 0 ? 'negative' : '';
   const sdColor = stdDevColor(stats.standardDeviation);
 
+  const cvColor = covColor(stats.coefficientOfVariance);
+
   const statEntries = [
     { label: 'Mean', value: stats.mean.toFixed(2), colorClass: stats.mean > 0 ? 'positive' : stats.mean < 0 ? 'negative' : '', style: '' },
     { label: 'Std Dev', value: stats.standardDeviation.toFixed(2), colorClass: '', style: `color: ${sdColor}` },
+    { label: 'CoV', value: stats.coefficientOfVariance.toFixed(2), colorClass: '', style: `color: ${cvColor}` },
     { label: 'Best', value: stats.bestDay.toFixed(2), colorClass: 'positive', style: '' },
     { label: 'Worst', value: stats.worstDay.toFixed(2), colorClass: 'negative', style: '' },
     { label: 'Streak', value: `${streakAbs}`, colorClass: streakColorClass, style: '' },
@@ -284,4 +303,54 @@ sortedPlayers.forEach(([player, total]) => {
   mainRow.addEventListener('click', () => {
     togglePlayerDetails(player);
   });
+});
+
+// Build explanations card
+const explanationsEl = document.getElementById('statsExplanations')!;
+explanationsEl.innerHTML = `
+  <div class="stats-explanations">
+    <div class="explanation-item"><span class="explanation-term">Mean</span> <span class="explanation-def">Average result per game</span></div>
+    <div class="explanation-item"><span class="explanation-term">Std Dev</span> <span class="explanation-def">How spread out results are from the mean</span></div>
+    <div class="explanation-item"><span class="explanation-term">CoV</span> <span class="explanation-def">Volatility relative to average (std dev / mean)</span></div>
+    <div class="explanation-item"><span class="explanation-term">Best / Worst</span> <span class="explanation-def">Largest single-game win / loss</span></div>
+    <div class="explanation-item"><span class="explanation-term">Streak</span> <span class="explanation-def">Consecutive wins or losses (current)</span></div>
+    <div class="explanation-item"><span class="explanation-term">Games</span> <span class="explanation-def">Total games played (excludes sit-outs)</span></div>
+  </div>
+`;
+
+// Build graph toggle
+const graphToggleEl = document.getElementById('graphToggle')!;
+graphToggleEl.innerHTML = `
+  <div class="graph-toggle">
+    <label class="toggle-label">
+      <span class="toggle-text">Interactive graph</span>
+      <span class="toggle-switch">
+        <input type="checkbox" id="crosshairToggle">
+        <span class="toggle-slider"></span>
+      </span>
+    </label>
+  </div>
+`;
+
+const crosshairToggle = document.getElementById('crosshairToggle') as HTMLInputElement;
+
+// Start with graph static (toggle off)
+pokerChart.options.events = [];
+pokerChart.options.plugins!.tooltip!.enabled = false;
+pokerChart.update();
+
+crosshairToggle.addEventListener('change', () => {
+  if (crosshairToggle.checked) {
+    pokerChart.options.events = ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'];
+    pokerChart.options.plugins!.tooltip!.enabled = true;
+    pokerChart.options.plugins!.tooltip!.filter = undefined as any;
+    pokerChart.options.interaction!.mode = 'index';
+    pokerChart.options.interaction!.intersect = false;
+    pokerChart.options.hover!.mode = 'index';
+    pokerChart.options.hover!.intersect = false;
+  } else {
+    pokerChart.options.events = [];
+    pokerChart.options.plugins!.tooltip!.enabled = false;
+  }
+  pokerChart.update();
 });

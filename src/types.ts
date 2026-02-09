@@ -11,6 +11,7 @@ export interface PlayerStatistics {
   bestDay: number;
   worstDay: number;
   streak: number; // positive = winning streak, negative = losing streak
+  coefficientOfVariance: number;
 }
 
 export interface ProcessedData {

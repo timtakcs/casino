@@ -66,18 +66,6 @@ const processedData = processGameData(gamesData);
 // Create the chart
 const ctx = document.getElementById('pokerChart') as HTMLCanvasElement;
 
-const tooltipFilter = (tooltipItem: any) => {
-  const chart = tooltipItem.chart;
-  const meta = chart.getDatasetMeta(tooltipItem.datasetIndex);
-  const point = meta.data[tooltipItem.dataIndex];
-  if (!point) return false;
-  const evt = (chart as any)._lastEvent;
-  if (!evt) return false;
-  const dx = point.x - evt.x;
-  const dy = point.y - evt.y;
-  return Math.sqrt(dx * dx + dy * dy) < 40;
-};
-
 const pokerChart = new Chart(ctx, {
   type: 'line',
   data: {
@@ -131,7 +119,6 @@ const pokerChart = new Chart(ctx, {
           size: 12,
           weight: 300
         },
-        filter: tooltipFilter,
         callbacks: {
           title: (items: any[]) => {
             if (!items.length) return '';
@@ -305,18 +292,25 @@ sortedPlayers.forEach(([player, total]) => {
   });
 });
 
-// Build explanations card
+// Build collapsible explanations card
 const explanationsEl = document.getElementById('statsExplanations')!;
 explanationsEl.innerHTML = `
   <div class="stats-explanations">
-    <div class="explanation-item"><span class="explanation-term">Mean</span> <span class="explanation-def">Average result per game</span></div>
-    <div class="explanation-item"><span class="explanation-term">Std Dev</span> <span class="explanation-def">How spread out results are from the mean</span></div>
-    <div class="explanation-item"><span class="explanation-term">CoV</span> <span class="explanation-def">Volatility relative to average (std dev / mean)</span></div>
-    <div class="explanation-item"><span class="explanation-term">Best / Worst</span> <span class="explanation-def">Largest single-game win / loss</span></div>
-    <div class="explanation-item"><span class="explanation-term">Streak</span> <span class="explanation-def">Consecutive wins or losses (current)</span></div>
-    <div class="explanation-item"><span class="explanation-term">Games</span> <span class="explanation-def">Total games played (excludes sit-outs)</span></div>
+    <div class="explanations-header">Stat definitions</div>
+    <div class="explanations-body">
+      <div class="explanation-item"><span class="explanation-term">Mean</span> <span class="explanation-def">Average result per game</span></div>
+      <div class="explanation-item"><span class="explanation-term">Std Dev</span> <span class="explanation-def">How spread out results are from the mean</span></div>
+      <div class="explanation-item"><span class="explanation-term">CoV</span> <span class="explanation-def">Volatility relative to average (std dev / mean)</span></div>
+      <div class="explanation-item"><span class="explanation-term">Best / Worst</span> <span class="explanation-def">Largest single-game win / loss</span></div>
+      <div class="explanation-item"><span class="explanation-term">Streak</span> <span class="explanation-def">Consecutive wins or losses (current)</span></div>
+      <div class="explanation-item"><span class="explanation-term">Games</span> <span class="explanation-def">Total games played (excludes sit-outs)</span></div>
+    </div>
   </div>
 `;
+
+document.querySelector('.explanations-header')!.addEventListener('click', () => {
+  document.querySelector('.stats-explanations')!.classList.toggle('expanded');
+});
 
 // Build graph toggle
 const graphToggleEl = document.getElementById('graphToggle')!;
@@ -334,8 +328,10 @@ graphToggleEl.innerHTML = `
 
 const crosshairToggle = document.getElementById('crosshairToggle') as HTMLInputElement;
 
-// Start with graph static (toggle off)
-pokerChart.options.events = [];
+// Graph interactivity toggle.
+// OFF: events=['click'] so legend toggling works, but no hover/tooltip.
+// ON:  all events restored, tooltip enabled, index mode for crosshair.
+pokerChart.options.events = ['click'];
 pokerChart.options.plugins!.tooltip!.enabled = false;
 pokerChart.update();
 
@@ -343,13 +339,12 @@ crosshairToggle.addEventListener('change', () => {
   if (crosshairToggle.checked) {
     pokerChart.options.events = ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'];
     pokerChart.options.plugins!.tooltip!.enabled = true;
-    pokerChart.options.plugins!.tooltip!.filter = undefined as any;
     pokerChart.options.interaction!.mode = 'index';
     pokerChart.options.interaction!.intersect = false;
     pokerChart.options.hover!.mode = 'index';
     pokerChart.options.hover!.intersect = false;
   } else {
-    pokerChart.options.events = [];
+    pokerChart.options.events = ['click'];
     pokerChart.options.plugins!.tooltip!.enabled = false;
   }
   pokerChart.update();

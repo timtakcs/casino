@@ -1,3 +1,11 @@
+### Graph interactivity
+   The chart has an "Interactive graph" toggle. It controls Chart.js `events`:
+   - **OFF** (default): `events=['click']` — only click events fire, so legend toggling
+     works (show/hide players), but there are no hover effects or tooltips.
+   - **ON**: all events restored (`mousemove`, `mouseout`, `click`, `touchstart`,
+     `touchmove`), tooltip enabled, interaction mode set to `'index'` for crosshair
+     behavior (hovering shows all visible players' values at that x-position).
+
 ### Testing changes
    - Dev server runs on http://localhost:5173/
    - Use Playwright MCP to screenshot pages after making CSS changes

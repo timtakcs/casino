@@ -77,6 +77,14 @@ new Chart(ctx, {
     responsive: true,
     maintainAspectRatio: false,
     backgroundColor: 'transparent',
+    interaction: {
+      mode: 'nearest',
+      intersect: false
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: false
+    },
     layout: {
       padding: {
         right: 40
@@ -110,6 +118,28 @@ new Chart(ctx, {
           family: 'Iosevka Aile, Courier New, monospace',
           size: 12,
           weight: 300
+        },
+        filter: (tooltipItem: any) => {
+          const chart = tooltipItem.chart;
+          const meta = chart.getDatasetMeta(tooltipItem.datasetIndex);
+          const point = meta.data[tooltipItem.dataIndex];
+          if (!point) return false;
+          const evt = (chart as any)._lastEvent;
+          if (!evt) return false;
+          const dx = point.x - evt.x;
+          const dy = point.y - evt.y;
+          return Math.sqrt(dx * dx + dy * dy) < 40;
+        },
+        callbacks: {
+          title: (items: any[]) => {
+            if (!items.length) return '';
+            return items[0].label || '';
+          },
+          label: (item: any) => {
+            const name = item.dataset.label || '';
+            const value = item.parsed.y !== null ? item.parsed.y.toFixed(2) : '';
+            return ` ${name}: ${value}`;
+          }
         }
       }
     },
@@ -180,6 +210,20 @@ function togglePlayerDetails(player: string): void {
   }
 }
 
+// Compute std dev range across all players for color interpolation
+const allStdDevs = sortedPlayers.map(([p]) => processedData.playerStats.get(p)!.standardDeviation);
+const minStdDev = Math.min(...allStdDevs);
+const maxStdDev = Math.max(...allStdDevs);
+
+function stdDevColor(stdDev: number): string {
+  const t = maxStdDev > minStdDev ? (stdDev - minStdDev) / (maxStdDev - minStdDev) : 0;
+  // Blue (#5A7A9B) to Orange (#B8864A)
+  const r = Math.round(90 + t * 94);
+  const g = Math.round(122 + t * 12);
+  const b = Math.round(155 - t * 81);
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 sortedPlayers.forEach(([player, total]) => {
   const stats = processedData.playerStats.get(player)!;
 
@@ -209,25 +253,29 @@ sortedPlayers.forEach(([player, total]) => {
   detailsRow.className = 'player-details';
   detailsRow.dataset.player = player;
 
-  const detailsCell = document.createElement('td');
-  detailsCell.colSpan = 2;
-  detailsCell.innerHTML = `
-    <div class="details-content">
-      <div class="stat-row">
-        <span class="stat-label">Mean:</span>
-        <span class="stat-value ${stats.mean > 0 ? 'positive' : stats.mean < 0 ? 'negative' : ''}">${stats.mean.toFixed(2)}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Std Dev:</span>
-        <span class="stat-value">${stats.standardDeviation.toFixed(2)}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Games:</span>
-        <span class="stat-value">${stats.sampleCount}</span>
-      </div>
-    </div>
-  `;
-  detailsRow.appendChild(detailsCell);
+  const streakAbs = Math.abs(stats.streak);
+  const streakColorClass = stats.streak > 0 ? 'positive' : stats.streak < 0 ? 'negative' : '';
+  const sdColor = stdDevColor(stats.standardDeviation);
+
+  const statEntries = [
+    { label: 'Mean', value: stats.mean.toFixed(2), colorClass: stats.mean > 0 ? 'positive' : stats.mean < 0 ? 'negative' : '', style: '' },
+    { label: 'Std Dev', value: stats.standardDeviation.toFixed(2), colorClass: '', style: `color: ${sdColor}` },
+    { label: 'Best', value: stats.bestDay.toFixed(2), colorClass: 'positive', style: '' },
+    { label: 'Worst', value: stats.worstDay.toFixed(2), colorClass: 'negative', style: '' },
+    { label: 'Streak', value: `${streakAbs}`, colorClass: streakColorClass, style: '' },
+    { label: 'Games', value: `${stats.sampleCount}`, colorClass: '', style: '' }
+  ];
+
+  const detailsLabelCell = document.createElement('td');
+  detailsLabelCell.className = 'details-label-cell';
+  const detailsValueCell = document.createElement('td');
+  detailsValueCell.className = 'details-value-cell';
+
+  detailsLabelCell.innerHTML = `<div class="details-content">${statEntries.map(s => `<div class="stat-row"><span class="stat-label">${s.label}</span></div>`).join('')}</div>`;
+  detailsValueCell.innerHTML = `<div class="details-content">${statEntries.map(s => `<div class="stat-row"><span class="stat-value ${s.colorClass}"${s.style ? ` style="${s.style}"` : ''}>${s.value}</span></div>`).join('')}</div>`;
+
+  detailsRow.appendChild(detailsLabelCell);
+  detailsRow.appendChild(detailsValueCell);
 
   tbody.appendChild(mainRow);
   tbody.appendChild(detailsRow);

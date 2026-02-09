@@ -91,10 +91,15 @@ export function generateGameLabels(games: GameData[]): string[] {
 
 function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatistics> {
   const playerDeltas = new Map<string, number[]>();
+  const playerAllDeltas = new Map<string, number[]>(); // includes zeros, in game order
 
-  // Collect all non-zero deltas for each player
   games.forEach(game => {
     Object.entries(game.differences).forEach(([player, delta]) => {
+      if (!playerAllDeltas.has(player)) {
+        playerAllDeltas.set(player, []);
+      }
+      playerAllDeltas.get(player)!.push(delta);
+
       if (delta !== 0) {
         if (!playerDeltas.has(player)) {
           playerDeltas.set(player, []);
@@ -110,7 +115,7 @@ function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatist
     const n = deltas.length;
 
     if (n === 0) {
-      stats.set(player, { mean: 0, standardDeviation: 0, sampleCount: 0 });
+      stats.set(player, { mean: 0, standardDeviation: 0, sampleCount: 0, bestDay: 0, worstDay: 0, streak: 0 });
       return;
     }
 
@@ -119,7 +124,27 @@ function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatist
     const variance = squaredDiffs.reduce((sum, sq) => sum + sq, 0) / n;
     const standardDeviation = Math.sqrt(variance);
 
-    stats.set(player, { mean, standardDeviation, sampleCount: n });
+    const bestDay = Math.max(...deltas);
+    const worstDay = Math.min(...deltas);
+
+    // Calculate streak from most recent game backwards, ignoring 0 entries
+    const allDeltas = playerAllDeltas.get(player)!;
+    let streak = 0;
+    let streakSign = 0;
+    for (let i = allDeltas.length - 1; i >= 0; i--) {
+      if (allDeltas[i] === 0) continue;
+      const sign = allDeltas[i] > 0 ? 1 : -1;
+      if (streakSign === 0) {
+        streakSign = sign;
+        streak = sign;
+      } else if (sign === streakSign) {
+        streak += sign;
+      } else {
+        break;
+      }
+    }
+
+    stats.set(player, { mean, standardDeviation, sampleCount: n, bestDay, worstDay, streak });
   });
 
   return stats;
@@ -195,7 +220,9 @@ export function processGameData(games: GameData[]): ProcessedData {
       cubicInterpolationMode: 'monotone',
       pointRadius: 0,
       pointHoverRadius: 6,
+      pointHitRadius: 20,
       borderWidth: 2,
+      hoverBorderWidth: 3,
       hidden: !hasEmoji,
       emoji: playerEmojis[player] || null
     };
@@ -208,7 +235,7 @@ export function processGameData(games: GameData[]): ProcessedData {
     datasets,
     currentTotals,
     playerStats,
-    minValue: minValue - 5,
-    maxValue: maxValue + 5
+    minValue: Math.floor(minValue / 5) * 5 - 5,
+    maxValue: Math.ceil(maxValue / 5) * 5 + 5
   };
 }

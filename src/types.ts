@@ -8,6 +8,9 @@ export interface PlayerStatistics {
   mean: number;
   standardDeviation: number;
   sampleCount: number;
+  bestDay: number;
+  worstDay: number;
+  streak: number; // positive = winning streak, negative = losing streak
 }
 
 export interface ProcessedData {

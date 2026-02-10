@@ -7,7 +7,7 @@
      behavior (hovering shows all visible players' values at that x-position).
 
 ### Testing changes
-   - Dev server runs on http://localhost:5173/
+   - Dev server runs on http://localhost:5175/
    - Use Playwright MCP to screenshot pages after making CSS changes
    - Use the playwright MCP tools (not bash) to open a browser
    - Always verify visual changes by navigating to the affected page

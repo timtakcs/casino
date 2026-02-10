@@ -1,4 +1,4 @@
-import { GameData, ProcessedData, PlayerStatistics } from './types.js';
+import type { GameData, ProcessedData, PlayerStatistics } from './types.js';
 
 export const gamesData: GameData[] = [
   {
@@ -197,9 +197,6 @@ export function processGameData(games: GameData[]): ProcessedData {
       }
     }
   });
-
-  console.log(runningTotals)
-  console.log("will this relfect")
 
   // Calculate min and max values across all data points
   let minValue = Infinity;

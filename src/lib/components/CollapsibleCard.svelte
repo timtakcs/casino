@@ -5,13 +5,26 @@
 	let {
 		headerText,
 		isExpanded = $bindable(false),
+		showPlusIcon = false,
 		children
-	}: { headerText: string; isExpanded: boolean; children: Snippet } = $props();
+	}: { headerText: string; isExpanded: boolean; showPlusIcon?: boolean; children: Snippet } = $props();
+
+	let plusRotation = $state(0);
+
+	function handleToggle() {
+		isExpanded = !isExpanded;
+		if (showPlusIcon) {
+			plusRotation = isExpanded ? 90 : 0;
+		}
+	}
 </script>
 
 <div class="collapsible">
-	<button class="collapsible-header" class:expanded={isExpanded} onclick={() => (isExpanded = !isExpanded)}>
-		{headerText}
+	<button class="collapsible-header" class:expanded={isExpanded} onclick={handleToggle}>
+		<span>{headerText}</span>
+		{#if showPlusIcon}
+			<span class="plus-icon" style="transform: rotate({plusRotation}deg)">+</span>
+		{/if}
 	</button>
 	{#if isExpanded}
 		<div class="collapsible-body" transition:slide={{ duration: 150 }}>
@@ -29,7 +42,9 @@
 
 	.collapsible-header {
 		all: unset;
-		display: block;
+		display: flex;
+		align-items: center;
+		width: 100%;
 		padding: 0 16px;
 		font-size: 12px;
 		color: #888888;
@@ -38,5 +53,11 @@
 		cursor: pointer;
 		font-family: inherit;
 		font-weight: inherit;
+		gap: 12px;
+	}
+
+	.plus-icon {
+		font-size: 16px;
+		transition: transform 0.2s ease;
 	}
 </style>

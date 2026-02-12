@@ -60,10 +60,10 @@
 				<span class="explanation-def">Total games played (excludes sit-outs)</span>
 			</div>
 		</CollapsibleCard>
-		<CollapsibleCard headerText="Add New Game" bind:isExpanded={showGameForm}>
+		<ToggleSwitch label="Interactive graph" bind:isChecked={isGraphInteractive} />
+		<CollapsibleCard headerText="New Game" showPlusIcon={true} bind:isExpanded={showGameForm}>
 			<GameEntryForm />
 		</CollapsibleCard>
-		<ToggleSwitch label="Interactive graph" bind:isChecked={isGraphInteractive} />
 	</div>
 </div>
 

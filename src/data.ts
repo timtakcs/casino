@@ -56,6 +56,10 @@ export const gamesData: GameData[] = [
     date: "2026-02-07",
     gameNumber: 2,
     differences: { "carson": -2, "arv": 4.20, "vin": -0.55, "omar": -1.65, "timur": 0, "connor": 0, "jesus": 0, "arhaan": 0 }
+  },
+  {
+    date: "2026-02-12",
+    differences: { "carson": -5.70, "timur": -3.85, "omar": 4.65, "connor": -0.90, "arv": 5.80, "vin": 0, "jesus": 0, "arhaan": 0 }
   }
 ];
 

@@ -1,16 +1,20 @@
 <script lang="ts">
 	import type { Chart } from 'chart.js';
-	import { gamesData, processGameData } from '$lib/data.js';
+	import { processGameData } from '$lib/data.js';
 	import PokerChart from '$lib/components/PokerChart.svelte';
 	import PlayerTable from '$lib/components/PlayerTable.svelte';
 	import CollapsibleCard from '$lib/components/CollapsibleCard.svelte';
 	import ToggleSwitch from '$lib/components/ToggleSwitch.svelte';
+	import GameEntryForm from '$lib/components/GameEntryForm.svelte';
 
-	const processedData = processGameData(gamesData);
+	let { data } = $props();
+
+	const processedData = processGameData(data.games);
 
 	let chartInstance: Chart | undefined = $state();
 	let isGraphInteractive = $state(false);
 	let showStatExplanations = $state(false);
+	let showGameForm = $state(false);
 
 	$effect(() => {
 		const interactive = isGraphInteractive;
@@ -55,6 +59,9 @@
 				<span class="explanation-term">Games</span>
 				<span class="explanation-def">Total games played (excludes sit-outs)</span>
 			</div>
+		</CollapsibleCard>
+		<CollapsibleCard headerText="Add New Game" bind:isExpanded={showGameForm}>
+			<GameEntryForm />
 		</CollapsibleCard>
 		<ToggleSwitch label="Interactive graph" bind:isChecked={isGraphInteractive} />
 	</div>

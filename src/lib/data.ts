@@ -1,5 +1,7 @@
 import type { GameData, ProcessedData, PlayerStatistics } from './types.js';
 
+// This data is kept temporarily for the migration script
+// After running `npm run migrate`, this array can be safely removed
 export const gamesData: GameData[] = [
   {
     date: "2026-01-13",

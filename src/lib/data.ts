@@ -47,15 +47,15 @@ export const gamesData: GameData[] = [
     date: "2026-02-05",
     differences: { "arv": -5.55, "carson": -5.20, "omar": 2.45, "connor": 7.30, "timur": 1.00, "vin": 0, "jesus": 0 }
   },
-  {
-    date: "2026-02-07",
-    gameNumber: 1,
-    differences: { "arhaan": 13.15, "connor": -4.20, "carson": -3.95, "arv": -5, "timur": 0, "omar": 0, "vin": 0, "jesus": 0 }
-  },
+  // {
+  //   date: "2026-02-07",
+  //   gameNumber: 1,
+  //   differences: { "arhaan": 13.15, "connor": -4.20, "carson": -3.95, "arv": -5, "timur": 0, "omar": 0, "vin": 0, "jesus": 0 }
+  // },
   {
     date: "2026-02-07",
     gameNumber: 2,
-    differences: { "carson": -2, "arv": 4.20, "vin": -0.55, "omar": -1.65, "timur": 0, "connor": 0, "jesus": 0, "arhaan": 0 }
+    differences: { "carson": -2, "arv": 4.20, "vin": -0.55, "omar": -1.65, "timur": 0, "connor": 0, "jesus": 0 }
   },
   {
     date: "2026-02-09",

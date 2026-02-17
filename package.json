@@ -13,7 +13,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:e2e": "playwright test",
-		"test": "npm run test:e2e"
+		"test": "npm run test:e2e",
+		"migrate": "tsx src/lib/db/migrate.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
@@ -31,11 +32,14 @@
 		"prettier-plugin-svelte": "^3.4.1",
 		"svelte": "^5.49.2",
 		"svelte-check": "^4.3.6",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.54.0",
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
-		"chart.js": "^4.5.1"
+		"@supabase/supabase-js": "^2.95.3",
+		"chart.js": "^4.5.1",
+		"dotenv": "^17.2.4"
 	}
 }

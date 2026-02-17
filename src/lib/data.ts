@@ -1,5 +1,7 @@
 import type { GameData, ProcessedData, PlayerStatistics } from './types.js';
 
+// This data is kept temporarily for the migration script
+// After running `npm run migrate`, this array can be safely removed
 export const gamesData: GameData[] = [
   {
     date: "2026-01-13",
@@ -47,6 +49,7 @@ export const gamesData: GameData[] = [
     date: "2026-02-05",
     differences: { "arv": -5.55, "carson": -5.20, "omar": 2.45, "connor": 7.30, "timur": 1.00, "vin": 0, "jesus": 0 }
   },
+  // don't uncomment this but keep it here. this is the only place where this is stored.
   // {
   //   date: "2026-02-07",
   //   gameNumber: 1,

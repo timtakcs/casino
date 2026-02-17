@@ -49,11 +49,12 @@ export const gamesData: GameData[] = [
     date: "2026-02-05",
     differences: { "arv": -5.55, "carson": -5.20, "omar": 2.45, "connor": 7.30, "timur": 1.00, "vin": 0, "jesus": 0 }
   },
-  {
-    date: "2026-02-07",
-    gameNumber: 1,
-    differences: { "arhaan": 13.15, "connor": -4.20, "carson": -3.95, "arv": -5, "timur": 0, "omar": 0, "vin": 0, "jesus": 0 }
-  },
+  // don't uncomment this but keep it here. this is the only place where this is stored.
+  // {
+  //   date: "2026-02-07",
+  //   gameNumber: 1,
+  //   differences: { "arhaan": 13.15, "connor": -4.20, "carson": -3.95, "arv": -5, "timur": 0, "omar": 0, "vin": 0, "jesus": 0 }
+  // },
   {
     date: "2026-02-07",
     gameNumber: 2,

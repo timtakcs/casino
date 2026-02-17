@@ -67,7 +67,7 @@
 
 		// 1: Fade out the clicked player
 		animPhase = 'fade-out';
-		await sleep(150);
+		await sleep(1);
 
 		// 2: Toggle + slide everything to new positions
 		const p = players.find((p) => p.name === name)!;
@@ -75,11 +75,11 @@
 		if (!p.selected) p.difference = '';
 		animPhase = 'moving';
 		refreshLayout();
-		await sleep(300);
+		await sleep(1);
 
 		// 3: Fade in at new position
 		animPhase = 'fade-in';
-		await sleep(200);
+		await sleep(1);
 
 		animatingPlayer = null;
 		animPhase = null;
@@ -88,9 +88,7 @@
 		// Auto-focus the input if newly selected
 		if (p.selected) {
 			await sleep(10);
-			const input = containerEl?.querySelector(
-				`[data-player="${name}"] input`
-			) as HTMLInputElement;
+			const input = containerEl?.querySelector(`[data-player="${name}"] input`) as HTMLInputElement;
 			input?.focus();
 		}
 	}
@@ -108,9 +106,7 @@
 		if (!name || !containerEl) return;
 		const p = players.find((p) => p.name === name);
 		if (p?.selected) {
-			const input = containerEl.querySelector(
-				`[data-player="${name}"] input`
-			) as HTMLInputElement;
+			const input = containerEl.querySelector(`[data-player="${name}"] input`) as HTMLInputElement;
 			input?.focus();
 		} else {
 			const btn = containerEl.querySelector(`[data-player="${name}"]`) as HTMLElement;
@@ -206,7 +202,9 @@
 				class="player-item"
 				class:selected={player.selected}
 				data-player={player.name}
-				style="transform: translateY({positions.get(player.name) ?? 0}px); opacity: {playerOpacity(player.name)};"
+				style="transform: translateY({positions.get(player.name) ?? 0}px); opacity: {playerOpacity(
+					player.name
+				)};"
 				onclick={() => togglePlayer(player.name)}
 				onfocus={() => handleRowFocus(player.name)}
 			>
@@ -274,6 +272,7 @@
 		gap: 0;
 		padding: 16px;
 		padding-top: 8px;
+		user-select: none;
 	}
 
 	.players-container {

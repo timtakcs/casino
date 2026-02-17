@@ -8,7 +8,6 @@
 
 	// Form state
 	let date = $state(new Date().toISOString().split('T')[0]);
-	let gameNumber = $state<number | undefined>(undefined);
 	let password = $state('');
 	let error = $state('');
 	let isSubmitting = $state(false);
@@ -172,11 +171,11 @@
 		try {
 			const gameData: GameData = {
 				date,
+				gameNumber: 1,
 				differences: Object.fromEntries(
 					sel.map((p) => [p.name.toLowerCase(), parseFloat(p.difference)])
 				)
 			};
-			if (gameNumber !== undefined && gameNumber !== null) gameData.gameNumber = gameNumber;
 			const result = await writeToDb(password, gameData);
 			if (result.success) window.location.reload();
 			else error = result.error || 'Failed to save game';
@@ -230,21 +229,21 @@
 
 	<div class="form-separator"></div>
 
-	<div class="form-row">
+	<!-- <div class="form-row">
 		<input type="date" class="form-input" bind:value={date} required />
 		<span class="separator">|</span>
 		<input
 			type="text"
 			inputmode="numeric"
 			class="form-input"
-			placeholder="Game #"
+			placeholder="Ga"
 			value={gameNumber ?? ''}
 			oninput={(e) => {
 				const v = e.currentTarget.value;
 				gameNumber = v ? parseInt(v) : undefined;
 			}}
 		/>
-	</div>
+	</div> -->
 
 	<div class="form-row">
 		<input

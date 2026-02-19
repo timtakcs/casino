@@ -122,6 +122,13 @@ function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatist
 
   const stats = new Map<string, PlayerStatistics>();
 
+  // Add zero-stat entries for players who only have 0-difference games
+  playerAllDeltas.forEach((_, player) => {
+    if (!playerDeltas.has(player)) {
+      stats.set(player, { mean: 0, standardDeviation: 0, sampleCount: 0, bestDay: 0, worstDay: 0, streak: 0, coefficientOfVariance: 0 });
+    }
+  });
+
   playerDeltas.forEach((deltas, player) => {
     const n = deltas.length;
 

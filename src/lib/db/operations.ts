@@ -1,5 +1,19 @@
-import { supabase, validatePassword } from '$lib/supabase.js';
+import { supabase } from '$lib/supabase.js';
 import type { GameData } from '$lib/types.js';
+
+/**
+ * Signs in using Supabase Auth and stores the session in localStorage
+ */
+export async function signIn(password: string): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: 'admin@poker.local',
+    password
+  });
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
 
 /**
  * Fetches all games from Supabase and transforms them into GameData format
@@ -57,18 +71,11 @@ export async function fetchAllGames(): Promise<GameData[]> {
 }
 
 /**
- * Writes a new game to the database after validating password
+ * Writes a new game to the database (caller must already be authenticated)
  */
 export async function writeToDb(
-  password: string,
   gameData: GameData
 ): Promise<{ success: boolean; error?: string }> {
-  // Validate password
-  const isValid = await validatePassword(password);
-  if (!isValid) {
-    return { success: false, error: 'Invalid password' };
-  }
-
   // Call the Postgres RPC function for atomic transaction
   const { data, error } = await supabase.rpc('insert_game', {
     p_date: gameData.date,

@@ -13,31 +13,36 @@ ALTER TABLE game_results ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Allow all operations on games" ON games;
 DROP POLICY IF EXISTS "Allow all operations on game_results" ON game_results;
+DROP POLICY IF EXISTS "Public read on games" ON games;
+DROP POLICY IF EXISTS "Public read on game_results" ON game_results;
+DROP POLICY IF EXISTS "Authenticated insert on games" ON games;
+DROP POLICY IF EXISTS "Authenticated insert on game_results" ON game_results;
 
--- Create permissive policies that allow all operations
-CREATE POLICY "Allow all operations on games"
-ON games
-FOR ALL
-USING (true)
-WITH CHECK (true);
+-- Public read (anon role)
+CREATE POLICY "Public read on games"
+  ON games FOR SELECT USING (true);
 
-CREATE POLICY "Allow all operations on game_results"
-ON game_results
-FOR ALL
-USING (true)
-WITH CHECK (true);
+CREATE POLICY "Public read on game_results"
+  ON game_results FOR SELECT USING (true);
+
+-- Authenticated write
+CREATE POLICY "Authenticated insert on games"
+  ON games FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Authenticated insert on game_results"
+  ON game_results FOR INSERT TO authenticated WITH CHECK (true);
 
 -- ============================================
 -- 2. Create Atomic Insert Function
 -- ============================================
 
+-- Function runs as the caller's role (authenticated users have INSERT rights)
 CREATE OR REPLACE FUNCTION insert_game(
   p_date DATE,
   p_game_number INTEGER,
   p_results JSONB
 ) RETURNS BIGINT
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE

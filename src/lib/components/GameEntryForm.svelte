@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { writeToDb } from '$lib/db/operations.js';
+	import { onMount } from 'svelte';
+	import { writeToDb, signIn } from '$lib/db/operations.js';
+	import { supabase } from '$lib/supabase.js';
 	import type { GameData } from '$lib/types.js';
 	import { playerColors } from '$lib/data.js';
 
@@ -12,6 +14,17 @@
 	let error = $state('');
 	let isSubmitting = $state(false);
 	let newPlayerName = $state('');
+	let isAuthenticated = $state(false);
+
+	onMount(() => {
+		supabase.auth.getSession().then(({ data }) => {
+			isAuthenticated = !!data.session;
+		});
+		const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+			isAuthenticated = !!session;
+		});
+		return () => listener.subscription.unsubscribe();
+	});
 
 	// Player state
 	type PlayerData = { name: string; selected: boolean; difference: string };
@@ -173,7 +186,7 @@
 			error = 'Date is required';
 			return;
 		}
-		if (!password) {
+		if (!isAuthenticated && !password) {
 			error = 'Password is required';
 			return;
 		}
@@ -190,6 +203,13 @@
 		isSubmitting = true;
 		error = '';
 		try {
+			if (!isAuthenticated) {
+				const authResult = await signIn(password);
+				if (!authResult.success) {
+					error = authResult.error || 'Invalid password';
+					return;
+				}
+			}
 			const gameData: GameData = {
 				date,
 				gameNumber: 1,
@@ -197,7 +217,7 @@
 					sel.map((p) => [p.name.toLowerCase(), parseFloat(p.difference)])
 				)
 			};
-			const result = await writeToDb(password, gameData);
+			const result = await writeToDb(gameData);
 			if (result.success) window.location.reload();
 			else error = result.error || 'Failed to save game';
 		} catch (err) {
@@ -260,6 +280,10 @@
 
 	<div class="form-separator"></div>
 
+	<div class="form-row">
+		<input type="date" class="form-input" bind:value={date} />
+	</div>
+
 	<!-- <div class="form-row">
 		<input type="date" class="form-input" bind:value={date} required />
 		<span class="separator">|</span>
@@ -276,15 +300,16 @@
 		/>
 	</div> -->
 
-	<div class="form-row">
-		<input
-			type="password"
-			class="form-input full-width"
-			placeholder="Password"
-			bind:value={password}
-			required
-		/>
-	</div>
+	{#if !isAuthenticated}
+		<div class="form-row">
+			<input
+				type="password"
+				class="form-input full-width"
+				placeholder="Password"
+				bind:value={password}
+			/>
+		</div>
+	{/if}
 
 	{#if error}
 		<div class="error-message">{error}</div>

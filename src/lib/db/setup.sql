@@ -54,7 +54,7 @@ BEGIN
   RETURNING id INTO game_id;
 
   -- Insert all game results
-  INSERT INTO game_results (playerName, difference, gameId)
+  INSERT INTO game_results ("playerName", difference, "gameId")
   SELECT key, value::TEXT::NUMERIC, game_id
   FROM jsonb_each_text(p_results);
 

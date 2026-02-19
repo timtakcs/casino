@@ -85,7 +85,7 @@ export async function writeToDb(
 
   if (error) {
     console.error('Error writing game to DB:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: 'Failed to save game' };
   }
 
   return { success: true };

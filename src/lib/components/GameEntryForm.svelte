@@ -11,6 +11,7 @@
 	let password = $state('');
 	let error = $state('');
 	let isSubmitting = $state(false);
+	let newPlayerName = $state('');
 
 	// Player state
 	type PlayerData = { name: string; selected: boolean; difference: string };
@@ -92,9 +93,29 @@
 		}
 	}
 
+	function addNewPlayer() {
+		const trimmed = newPlayerName.trim().toLowerCase();
+		if (!trimmed) return;
+		if (players.find((p) => p.name === trimmed)) {
+			error = 'Player already exists';
+			return;
+		}
+		players.push({ name: trimmed, selected: false, difference: '' });
+		refreshLayout();
+		newPlayerName = '';
+		error = '';
+	}
+
+	function handleNewPlayerKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			addNewPlayer();
+		}
+	}
+
 	// Keyboard navigation
 	function navigateRow(delta: number) {
-		const newIdx = Math.max(0, Math.min(focusedIndex + delta, allPlayerNames.length - 1));
+		const newIdx = Math.max(0, Math.min(focusedIndex + delta, players.length - 1));
 		if (newIdx === focusedIndex) return;
 		focusedIndex = newIdx;
 		focusCurrentRow();
@@ -193,7 +214,7 @@
 		class="players-container"
 		bind:this={containerEl}
 		onkeydown={handleKeydown}
-		style="height: {allPlayerNames.length * ROW_HEIGHT}px;"
+		style="height: {players.length * ROW_HEIGHT}px;"
 	>
 		{#each players as player (player.name)}
 			<button
@@ -225,6 +246,16 @@
 				</span>
 			</button>
 		{/each}
+	</div>
+
+	<div class="new-player-row">
+		<input
+			type="text"
+			class="form-input"
+			placeholder="New player"
+			bind:value={newPlayerName}
+			onkeydown={handleNewPlayerKeydown}
+		/>
 	</div>
 
 	<div class="form-separator"></div>
@@ -352,6 +383,17 @@
 		color: #444444;
 	}
 
+	.new-player-row {
+		height: 45px;
+		display: flex;
+		align-items: center;
+		padding-left: 16px;
+	}
+
+	.new-player-row .form-input {
+		padding: 0;
+	}
+
 	.form-separator {
 		height: 1px;
 		background-color: #2a2a2a;
@@ -393,6 +435,14 @@
 	.form-input[type='date']::-webkit-calendar-picker-indicator {
 		filter: invert(0.5);
 		cursor: pointer;
+	}
+
+	.form-input:-webkit-autofill,
+	.form-input:-webkit-autofill:hover,
+	.form-input:-webkit-autofill:focus {
+		-webkit-text-fill-color: #888888;
+		-webkit-box-shadow: 0 0 0px 1000px #121212 inset;
+		transition: background-color 5000s ease-in-out 0s;
 	}
 
 	.submit-btn {

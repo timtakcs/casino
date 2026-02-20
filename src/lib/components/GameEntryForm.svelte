@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { writeToDb, signIn } from '$lib/db/operations.js';
+	import { writeToDb, signIn, upsertPlayer } from '$lib/db/operations.js';
+	import { generatePlayerColor } from '$lib/colors.js';
 	import { supabase } from '$lib/supabase.js';
 	import type { GameData, PlayerData } from '$lib/types.js';
-	import { playerColors } from '$lib/data.js';
+	import { playerEmojis } from '$lib/data.js';
 
-	const allPlayerNames = Object.keys(playerColors).sort();
+	let { playerNames }: { playerNames: string[] } = $props();
+
 	const ROW_HEIGHT = 45;
+	const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 	// Form state
 	let date = $state(new Date().toISOString().split('T')[0]);
@@ -16,6 +19,11 @@
 	let newPlayerName = $state('');
 	let isAuthenticated = $state(false);
 
+	// Phase 1: all players unselected — correct height available immediately for slide transition
+	let players = $state<PlayerData[]>(
+		playerNames.map((name) => ({ name, selected: false, difference: '' }))
+	);
+
 	onMount(() => {
 		supabase.auth.getSession().then(({ data }) => {
 			isAuthenticated = !!data.session;
@@ -23,13 +31,19 @@
 		const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
 			isAuthenticated = !!session;
 		});
+
+		// Phase 2: after slide transition finishes, activate emoji players
+		sleep(50).then(() => {
+			players
+				.filter((p) => p.name in playerEmojis)
+				.forEach((p) => {
+					p.selected = true;
+				});
+			refreshLayout();
+		});
+
 		return () => listener.subscription.unsubscribe();
 	});
-
-	// Player state
-	let players = $state<PlayerData[]>(
-		allPlayerNames.map((name) => ({ name, selected: false, difference: '' }))
-	);
 
 	// Animation state
 	let animatingPlayer = $state<string | null>(null);
@@ -100,7 +114,7 @@
 		}
 	}
 
-	function addNewPlayer() {
+	async function addNewPlayer() {
 		const trimmed = newPlayerName.trim().toLowerCase();
 		if (!trimmed) return;
 		if (players.find((p) => p.name === trimmed)) {
@@ -111,12 +125,16 @@
 		refreshLayout();
 		newPlayerName = '';
 		error = '';
+
+		const { data: existing } = await supabase.from('players').select('color');
+		const color = generatePlayerColor(((existing ?? []) as any[]).map((p) => p.color));
+		await upsertPlayer(trimmed, color);
 	}
 
 	function handleNewPlayerKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			addNewPlayer();
+			void addNewPlayer();
 		}
 	}
 
@@ -328,9 +346,9 @@
 		box-sizing: border-box;
 		height: 45px;
 		transition:
-			transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+			transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
 			opacity 0.15s ease,
-			background-color 0.2s ease;
+			background-color 0.3s ease;
 	}
 
 	.player-item:hover,

@@ -170,7 +170,7 @@ function calculatePlayerStatistics(games: GameData[]): Map<string, PlayerStatist
   return stats;
 }
 
-export function processGameData(games: GameData[]): ProcessedData {
+export function processGameData(games: GameData[], playerColors: Record<string, string>): ProcessedData {
   const gameLabels = generateGameLabels(games);
   const labels = ["", ...gameLabels];
   const numGames = games.length + 1;

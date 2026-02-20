@@ -9,7 +9,7 @@
 
 	let { data } = $props();
 
-	const processedData = processGameData(data.games);
+	const processedData = processGameData(data.games, data.playerColors);
 
 	let chartInstance: Chart | undefined = $state();
 	let isGraphInteractive = $state(false);
@@ -62,7 +62,7 @@
 		</CollapsibleCard>
 		<ToggleSwitch label="Interactive graph" bind:isChecked={isGraphInteractive} />
 		<CollapsibleCard headerText="New Game" showPlusIcon={true} bind:isExpanded={showGameForm}>
-			<GameEntryForm />
+			<GameEntryForm playerNames={Object.keys(data.playerColors).sort()} />
 		</CollapsibleCard>
 	</div>
 </div>

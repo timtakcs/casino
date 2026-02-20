@@ -70,6 +70,15 @@ export async function fetchAllGames(): Promise<GameData[]> {
   return games;
 }
 
+export async function fetchPlayerColors(): Promise<Record<string, string>> {
+  const { data } = await supabase.from('players').select('name, color');
+  return Object.fromEntries(((data ?? []) as any[]).map((p) => [p.name, p.color]));
+}
+
+export async function upsertPlayer(name: string, color: string): Promise<void> {
+  await supabase.from('players').upsert({ name, color }, { onConflict: 'name', ignoreDuplicates: true });
+}
+
 /**
  * Writes a new game to the database (caller must already be authenticated)
  */

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Chart } from 'chart.js';
+	import { slide } from 'svelte/transition';
 	import { processGameData } from '$lib/data.js';
 	import PokerChart from '$lib/components/PokerChart.svelte';
 	import PlayerTable from '$lib/components/PlayerTable.svelte';
@@ -12,9 +13,10 @@
 	const processedData = processGameData(data.games, data.playerColors);
 
 	let chartInstance: Chart | undefined = $state();
-	let isGraphInteractive = $state(false);
+	let isGraphInteractive = $state(true);
 	let showStatExplanations = $state(false);
 	let showGameForm = $state(false);
+	let plusRotation = $derived(showGameForm ? 90 : 0);
 
 	$effect(() => {
 		const interactive = isGraphInteractive;
@@ -61,9 +63,17 @@
 			</div>
 		</CollapsibleCard>
 		<ToggleSwitch label="Interactive graph" bind:isChecked={isGraphInteractive} />
-		<CollapsibleCard headerText="New Game" showPlusIcon={true} bind:isExpanded={showGameForm}>
-			<GameEntryForm playerNames={Object.keys(data.playerColors).sort()} />
-		</CollapsibleCard>
+		<div class="new-game-section">
+			<button class="new-game-header" onclick={() => (showGameForm = !showGameForm)}>
+				<span>New Game</span>
+				<span class="plus-icon" style="transform: rotate({plusRotation}deg)">+</span>
+			</button>
+			{#if showGameForm}
+				<div class="form-section" transition:slide={{ duration: 150 }}>
+					<GameEntryForm playerNames={Object.keys(data.playerColors).sort()} />
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -82,6 +92,50 @@
 		min-width: 250px;
 		display: flex;
 		flex-direction: column;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: hidden;
+	}
+
+	.new-game-section {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		margin-top: 20px;
+		padding-top: 16px;
+		border-top: 1px solid #2a2a2a;
+	}
+
+	.new-game-header {
+		all: unset;
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding: 0 16px;
+		font-size: 12px;
+		color: #888888;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+		cursor: pointer;
+		font-family: inherit;
+		font-weight: inherit;
+		gap: 12px;
+		flex-shrink: 0;
+		box-sizing: border-box;
+	}
+
+	.plus-icon {
+		font-size: 16px;
+		transition: transform 0.2s ease;
+	}
+
+	.form-section {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding-bottom: 24px;
 	}
 
 	.explanation-item {

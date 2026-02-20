@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { writeToDb, signIn } from '$lib/db/operations.js';
 	import { supabase } from '$lib/supabase.js';
-	import type { GameData } from '$lib/types.js';
+	import type { GameData, PlayerData } from '$lib/types.js';
 	import { playerColors } from '$lib/data.js';
 
 	const allPlayerNames = Object.keys(playerColors).sort();
@@ -27,7 +27,6 @@
 	});
 
 	// Player state
-	type PlayerData = { name: string; selected: boolean; difference: string };
 	let players = $state<PlayerData[]>(
 		allPlayerNames.map((name) => ({ name, selected: false, difference: '' }))
 	);
@@ -63,11 +62,6 @@
 		positions = new Map(visualOrder.map((n, i) => [n, i * ROW_HEIGHT]));
 	}
 
-	// Animation helpers
-	function sleep(ms: number) {
-		return new Promise<void>((r) => setTimeout(r, ms));
-	}
-
 	function playerOpacity(name: string): number {
 		if (animatingPlayer !== name) return 1;
 		if (animPhase === 'fade-out' || animPhase === 'moving') return 0;
@@ -80,7 +74,7 @@
 
 		// 1: Fade out the clicked player
 		animPhase = 'fade-out';
-		await sleep(1);
+		await tick();
 
 		// 2: Toggle + slide everything to new positions
 		const p = players.find((p) => p.name === name)!;
@@ -88,11 +82,11 @@
 		if (!p.selected) p.difference = '';
 		animPhase = 'moving';
 		refreshLayout();
-		await sleep(1);
+		await tick();
 
 		// 3: Fade in at new position
 		animPhase = 'fade-in';
-		await sleep(1);
+		await tick();
 
 		animatingPlayer = null;
 		animPhase = null;
@@ -100,7 +94,7 @@
 
 		// Auto-focus the input if newly selected
 		if (p.selected) {
-			await sleep(10);
+			await new Promise<void>((r) => setTimeout(r, 10));
 			const input = containerEl?.querySelector(`[data-player="${name}"] input`) as HTMLInputElement;
 			input?.focus();
 		}
@@ -284,22 +278,6 @@
 		<input type="date" class="form-input" bind:value={date} />
 	</div>
 
-	<!-- <div class="form-row">
-		<input type="date" class="form-input" bind:value={date} required />
-		<span class="separator">|</span>
-		<input
-			type="text"
-			inputmode="numeric"
-			class="form-input"
-			placeholder="Ga"
-			value={gameNumber ?? ''}
-			oninput={(e) => {
-				const v = e.currentTarget.value;
-				gameNumber = v ? parseInt(v) : undefined;
-			}}
-		/>
-	</div> -->
-
 	{#if !isAuthenticated}
 		<div class="form-row">
 			<input
@@ -355,10 +333,7 @@
 			background-color 0.2s ease;
 	}
 
-	.player-item:hover {
-		background-color: rgba(255, 255, 255, 0.05);
-	}
-
+	.player-item:hover,
 	.player-item:focus-visible {
 		background-color: rgba(255, 255, 255, 0.05);
 	}

@@ -175,8 +175,27 @@ export function processGameData(games: GameData[]): ProcessedData {
   const labels = ["", ...gameLabels];
   const numGames = games.length + 1;
 
+  // Track when each player first appears
+  const playerFirstGame = new Map<string, number>();
+  games.forEach((game, idx) => {
+    Object.keys(game.differences).forEach(player => {
+      if (!playerFirstGame.has(player)) playerFirstGame.set(player, idx);
+    });
+  });
+
+  // Zero-pad: players missing from a game after their first appearance get a 0
+  const paddedGames = games.map((game, idx) => {
+    const paddedDifferences = { ...game.differences };
+    playerFirstGame.forEach((firstIdx, player) => {
+      if (firstIdx < idx && !(player in paddedDifferences)) {
+        paddedDifferences[player] = 0;
+      }
+    });
+    return { ...game, differences: paddedDifferences };
+  });
+
   const allPlayers = new Set<string>();
-  games.forEach(game => {
+  paddedGames.forEach(game => {
     Object.keys(game.differences).forEach(player => allPlayers.add(player));
   });
 
@@ -185,7 +204,7 @@ export function processGameData(games: GameData[]): ProcessedData {
     runningTotals.set(player, new Array(numGames).fill(null))
   })
 
-  games.forEach((game, idx) => {
+  paddedGames.forEach((game, idx) => {
     allPlayers.forEach(player => {
       if (player in game.differences) {
         const score = game.differences[player];
@@ -245,7 +264,7 @@ export function processGameData(games: GameData[]): ProcessedData {
     };
   });
 
-  const playerStats = calculatePlayerStatistics(games);
+  const playerStats = calculatePlayerStatistics(paddedGames);
 
   return {
     labels,

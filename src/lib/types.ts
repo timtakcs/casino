@@ -1,3 +1,5 @@
+export type PlayerData = { name: string; selected: boolean; difference: string };
+
 export interface GameData {
   date: string;
   gameNumber?: number;

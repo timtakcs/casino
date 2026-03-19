@@ -184,6 +184,14 @@
 		if (player) player.difference = value;
 	}
 
+	function toggleSign(name: string) {
+		const player = players.find((p) => p.name === name);
+		if (!player) return;
+		const val = player.difference;
+		if (!val || val === '0' || val === '0.00') return;
+		player.difference = val.startsWith('-') ? val.slice(1) : '-' + val;
+	}
+
 	// Validation + submission
 	function validateBalance(): boolean {
 		const sel = players.filter((p) => p.selected && p.difference);
@@ -208,7 +216,10 @@
 			return;
 		}
 		if (!validateBalance()) {
-			error = 'Poker is a zero sum game!';
+			const sel = players.filter((p) => p.selected && p.difference);
+			const sum = sel.reduce((t, p) => t + parseFloat(p.difference || '0'), 0);
+			const sign = sum > 0 ? '+' : '';
+			error = `Poker is a zero sum game! (off by ${sign}${sum.toFixed(2)})`;
 			return;
 		}
 
@@ -264,6 +275,14 @@
 				<span class="separator">|</span>
 				<span class="diff-cell">
 					{#if player.selected}
+						<span
+							class="sign-toggle"
+							role="button"
+							tabindex="-1"
+							aria-label="Toggle sign"
+							onclick={(e) => { e.stopPropagation(); toggleSign(player.name); }}
+							onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); toggleSign(player.name); } }}
+						>+/−</span>
 						<input
 							type="text"
 							inputmode="decimal"
@@ -382,6 +401,25 @@
 
 	.diff-cell {
 		min-height: 20px;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.sign-toggle {
+		all: unset;
+		font-size: 11px;
+		color: #555555;
+		cursor: pointer;
+		line-height: 1;
+		padding: 2px 3px;
+		border-radius: 3px;
+		flex-shrink: 0;
+		user-select: none;
+	}
+
+	.sign-toggle:active {
+		color: #888888;
 	}
 
 	.player-difference {

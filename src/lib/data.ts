@@ -85,6 +85,7 @@ export const playerEmojis: Record<string, string> = {
   arv: '🕺🏽',
   timur: '🐗',
   omar: '🦧',
+  vin: '🇦🇷',
   carson: '🐈‍⬛',
   connor: '🟦'
 };

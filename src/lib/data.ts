@@ -87,7 +87,8 @@ export const playerEmojis: Record<string, string> = {
   omar: '🦧',
   vin: '🇦🇷',
   carson: '🐈‍⬛',
-  connor: '🟦'
+  connor: '🟦',
+  ali: '🦆'
 };
 
 export function generateGameLabels(games: GameData[]): string[] {
